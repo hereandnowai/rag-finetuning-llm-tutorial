@@ -1,0 +1,24 @@
+# Core LLM and RAG
+langchain
+langchain-community
+langchain-ollama
+pypdf
+faiss-cpu
+tiktoken
+
+# Fine-tuning and Data Handling
+transformers
+datasets
+peft
+bitsandbytes
+accelerate
+sentencepiece
+torch
+scikit-learn
+pandas
+tqdm
+
+# Utilities
+python-dotenv
+jupyter
+matplotlib
