@@ -24,7 +24,9 @@ This guide is designed for anyone who is going to be inteviewed on RAG and Fine-
 **Answer:** Smaller chunks (1000 chars) prevent exceeding the LLM's context window and ensure we only retrieve relevant facts. The **overlap (100 chars)** is critical for "Semantic Continuity"—it prevents a sentence from being cut in half, which would destroy the embedding's meaning.
 
 ### Q4: How did you generate the "Synthetic QA" pairs?
-**Answer:** In `activity1`, we use a heuristic approach. We take a chunk, find sentences that look like factual statements, and wrap them in a template. In a production setting, we would use a **"Teacher Model"** (like GPT-4) to read the chunks and generate complex Questions and Answers.
+**Answer:** In `activity1`, we use a **heuristic-based template approach**. We extract factual sentences using Regex (searching for years like '2025') and wrap them in a static question template. This keeps the demo fast and offline.
+
+In a **production setting**, we would use a high-reasoning **"Teacher Model"** (such as GPT-5+, Gemini 3 Flash+, or Claude 4 Opus+) to perform **LLM-based Synthetic Data Generation**. This allows for much more complex, multi-hop questions and logically challenging answers that avoid simple keywords.
 
 ---
 
