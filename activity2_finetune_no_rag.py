@@ -21,7 +21,7 @@ from transformers import (
 )
 
 
-PROMPT_TEMPLATE = "Question: {question}\nAnswer: {answer}"
+PROMPT_TEMPLATE = "<start_of_turn>user\nQuestion: {question}<end_of_turn>\n<start_of_turn>model\nAnswer: {answer}<end_of_turn>"
 
 
 def load_qa_jsonl(path: Path) -> List[Dict[str, str]]:
@@ -45,13 +45,15 @@ def train_model(data_path: Path, output_dir: Path, base_model: str, epochs: int,
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Gemma tokenizers often need the pad_token set to something specific or eos
+    tokenizer.padding_side = "right" 
 
     def tokenize(batch: Dict[str, List[str]]) -> Dict[str, List[List[int]]]:
-        return tokenizer(batch["text"], truncation=True, max_length=256)
+        return tokenizer(batch["text"], truncation=True, max_length=512)
 
     tokenized = dataset.map(tokenize, batched=True, remove_columns=["text"])
 
-    model = AutoModelForCausalLM.from_pretrained(base_model)
+    model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float32)
     model.resize_token_embeddings(len(tokenizer))
 
     training_args = TrainingArguments(
@@ -60,8 +62,8 @@ def train_model(data_path: Path, output_dir: Path, base_model: str, epochs: int,
         per_device_train_batch_size=batch_size,
         save_total_limit=1,
         logging_steps=5,
-        learning_rate=5e-5,
-        fp16=torch.cuda.is_available(),
+        learning_rate=2e-4, # Gemma often likes slightly higher LR than GPT2
+        use_mps_device=torch.backends.mps.is_available(),
         report_to="none",
     )
 
@@ -100,7 +102,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune a small LLM without retrieval.")
     parser.add_argument("--data", default="data/qa_train.jsonl")
     parser.add_argument("--output", default="models/ft_no_rag")
-    parser.add_argument("--base-model", default="distilgpt2")
+    parser.add_argument("--base-model", default="google/gemma-3-270m")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--ask", default="", help="Optional single question after training")
