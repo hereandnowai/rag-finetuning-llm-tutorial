@@ -26,7 +26,7 @@ This guide is designed for anyone who is going to be inteviewed on RAG and Fine-
 ### Q4: How did you generate the "Synthetic QA" pairs?
 **Answer:** In `activity1`, we use a **heuristic-based template approach**. We extract factual sentences using Regex (searching for years like '2025') and wrap them in a static question template. This keeps the demo fast and offline.
 
-In a **production setting**, we would use a high-reasoning **"Teacher Model"** (such as GPT-5+, Gemini 3 Flash+, or Claude 4 Opus+) to perform **LLM-based Synthetic Data Generation**. This allows for much more complex, multi-hop questions and logically challenging answers that avoid simple keywords.
+In a **production setting**, we would use a high-reasoning **"Teacher Model"** (such as GPT-5+, Gemini 3+, or Claude Opus 4+) to perform **LLM-based Synthetic Data Generation**. This allows for much more complex, multi-hop questions and logically challenging answers that avoid simple keywords.
 
 ---
 
@@ -92,6 +92,9 @@ A hybrid model is less likely to hallucinate and more likely to sound like a pro
 
 ### Q20: How would you scale this to 1,000 students running it simultaneously?
 **Answer:** "I would transition from the local scripts to a **Containerized Architecture**. I'd host an **Ollama Server** on an IIT Gandhinagar cluster with a GPU, and have the student scripts point to that URL via `OLLAMA_BASE_URL`. For the code, I would move the Vector Search from NumPy to a production-grade database like **Qdrant** or **Milvus**."
+
+### Q21: Can I use a model downloaded via Ollama for fine-tuning?
+**Answer:** "Generally, **no**. Ollama is optimized for **inference** and usually stores models as quantized blobs (GGUF). Fine-tuning requires the model in its 'raw' form (Safetensors/PyTorch) so that we can calculate gradients and update weights. While libraries like `unsloth` are narrowing this gap, the industry standard remains using HuggingFace weights for training and Ollama/vLLM for deployment."
 
 ---
 © 2026 - IIT Gandhinagar Demo Preparation Guide.
