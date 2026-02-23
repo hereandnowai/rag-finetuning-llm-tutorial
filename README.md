@@ -34,9 +34,9 @@ python activity1_prepare_domain_dataset.py --pdf data/economic_survey_sample.pdf
 ```
 
 ### Activity 2: Fine-tuning (Baseline)
-Trains a small local model (`distilgpt2`) on the generated QA pairs. This model tries to "memorize" the facts.
+Trains a small SOTA local model (`google/gemma-3-270m`) on the generated QA pairs. This model tries to "memorize" the facts.
 ```bash
-python activity2_finetune_no_rag.py --epochs 3
+export KMP_DUPLICATE_LIB_OK=TRUE && python activity2_finetune_no_rag.py --epochs 3
 ```
 
 ### Activity 3: RAG (Retrieval-Augmented Generation)

@@ -24,6 +24,9 @@ from transformers import (
 )
 
 
+PROMPT_TEMPLATE = "<start_of_turn>user\nQuestion: {question}<end_of_turn>\n<start_of_turn>model\nAnswer: {answer}<end_of_turn>"
+
+
 def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
@@ -55,17 +58,18 @@ def build_qa_from_text(text: str, max_pairs: int = 80) -> List[Dict[str, str]]:
 
 
 def train(rows: List[Dict[str, str]], out_dir: Path, base_model: str, epochs: int) -> None:
-    train_texts = [f"Question: {r['question']}\nAnswer: {r['answer']}" for r in rows]
+    train_texts = [PROMPT_TEMPLATE.format(question=r["question"], answer=r["answer"]) for r in rows]
     dataset = Dataset.from_dict({"text": train_texts})
 
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
 
-    model = AutoModelForCausalLM.from_pretrained(base_model)
+    model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float32)
 
     def tokenize(batch):
-        return tokenizer(batch["text"], truncation=True, max_length=256)
+        return tokenizer(batch["text"], truncation=True, max_length=512)
 
     tokenized = dataset.map(tokenize, batched=True, remove_columns=["text"])
 
@@ -75,7 +79,7 @@ def train(rows: List[Dict[str, str]], out_dir: Path, base_model: str, epochs: in
         per_device_train_batch_size=4,
         save_total_limit=1,
         logging_steps=5,
-        fp16=torch.cuda.is_available(),
+        learning_rate=2e-4,
         report_to="none",
     )
 
@@ -115,7 +119,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pdf", default="economic survey of India 2025-26.pdf")
     parser.add_argument("--start-page", type=int, default=1)
     parser.add_argument("--end-page", type=int, default=20)
-    parser.add_argument("--base-model", default="distilgpt2")
+    parser.add_argument("--base-model", default="google/gemma-3-270m")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--output", default="models/usecase2_ft_only")
     parser.add_argument("--ask", default="")

@@ -63,7 +63,6 @@ def train_model(data_path: Path, output_dir: Path, base_model: str, epochs: int,
         save_total_limit=1,
         logging_steps=5,
         learning_rate=2e-4, # Gemma often likes slightly higher LR than GPT2
-        use_mps_device=torch.backends.mps.is_available(),
         report_to="none",
     )
 

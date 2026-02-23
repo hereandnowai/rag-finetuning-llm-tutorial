@@ -31,7 +31,7 @@ This generates:
 ## 3. System 1: Fine-Tuned LLM (No RAG)
 
 ```bash
-python activity2_finetune_no_rag.py --epochs 3
+export KMP_DUPLICATE_LIB_OK=TRUE && python activity2_finetune_no_rag.py --epochs 3
 python activity2_finetune_no_rag.py --ask "What is one key factual statement from Economic Survey chunk 2?"
 ```
 

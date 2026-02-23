@@ -68,7 +68,7 @@ def load_ft_model(model_dir: Path):
 
 
 def answer_ft_only(tokenizer, model, question: str) -> str:
-    prompt = f"Question: {question}\nAnswer:"
+    prompt = f"<start_of_turn>user\nQuestion: {question}<end_of_turn>\n<start_of_turn>model\nAnswer:"
     inputs = tokenizer(prompt, return_tensors="pt")
     with torch.no_grad():
         outputs = model.generate(
@@ -111,10 +111,11 @@ def answer_hybrid(client: Client, tokenizer, model, chunks: List[str], chunk_vec
     context = "\n\n".join(chunks[int(i)] for i in idx)
 
     prompt = (
+        "<start_of_turn>user\n"
         "Answer using only the context facts.\n"
         f"Context:\n{context}\n\n"
-        f"Question: {question}\n"
-        "Answer:"
+        f"Question: {question}<end_of_turn>\n"
+        "<start_of_turn>model\nAnswer:"
     )
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=768)

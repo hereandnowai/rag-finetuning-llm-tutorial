@@ -32,14 +32,17 @@ In a **production setting**, we would use a high-reasoning **"Teacher Model"** (
 
 ## Part 3: Deep-Dive into Fine-Tuning ([activity2_finetune_no_rag.py](activity2_finetune_no_rag.py))
 
-### Q5: Why `distilgpt2` and not a BERT-style model?
-**Answer:** BERT is an **"Encoder-only"** model, great for classification but bad at speaking. `distilgpt2` is a **"Decoder-only"** (Causal) model. Since our goal is to generate *answers* to questions, we need a Causal LLM.
+### Q5: Why `google/gemma-3-270m` and not a BERT-style model or GPT-2?
+**Answer:** 
+1. **Legacy vs SOTA:** `distilgpt2` is a decade old and lacks modern instruction-following abilities. `Gemma 3` is the latest release (2025/2026) with significantly better reasoning at a tiny size.
+2. **Decoder-only:** Like GPT, Gemma is a **"Decoder-only"** (Causal) model, essential for generating conversational answers.
+3. **Efficiency:** At ~270 million parameters, it is small enough to be fine-tuned on a standard laptop (like a Mac with MPS) in minutes, making it ideal for classroom demos.
 
 ### Q6: What happens during `trainer.train()`? 
-**Answer:** The model performs "Backpropagation." It compares its predicted answer to the `gold_answer` in our dataset, calculates the **Cross-Entropy Loss**, and uses an **Optimizer (AdamW)** to adjust the model's weights to minimize that loss.
+**Answer:** The model performs "Backpropagation." It compares its predicted answer to the `gold_answer` in our dataset (formatted in the `<start_of_turn>` template), calculates the **Cross-Entropy Loss**, and uses an **Optimizer (AdamW)** to adjust the model's weights to minimize that loss.
 
 ### Q7: Explain the `DataCollatorForLanguageModeling`.
-**Answer:** In causal modeling, we aren't just predicting a label. We are predicting the *next token*. The collator handles "masking" and ensures the input sequences are padded correctly so the GPU can process them in batches.
+**Answer:** In causal modeling, we aren't just predicting a label. We are predicting the *next token*. The collator handles "masking" and ensures the input sequences are padded correctly so the GPU can process them in batches. Since Gemma uses a complex tokenizer, the collator ensures we don't accidentally compute loss on padding tokens.
 
 ---
 
@@ -71,13 +74,14 @@ A hybrid model is less likely to hallucinate and more likely to sound like a pro
 **Answer:** In Activity 5, we use a **Lexical Overlap Heuristic**. If the LLM's answer uses 75% words that do NOT appear in the source corpus, we flag it as a potential hallucination. In a research paper, we would use **"NLI (Natural Language Inference)"** models to check if the answer is "entailed" by the context.
 
 ### Q12: Explain the "Catastrophic Forgetting" risk in fine-tuning.
-**Answer:** If we fine-tuned `distilgpt2` too aggressively (too many epochs or high learning rate) on only Economic data, it might "forget" how to speak English generally or perform basic logic. This is why we keep the learning rate low (5e-5) in `activity2`.
+**Answer:** If we fine-tuned `Gemma 3` too aggressively (too many epochs or high learning rate) on only Economic data, it might "forget" how to speak English generally or perform basic logic. This is why we keep the learning rate low (2e-4 for Gemma) in `activity2`.
 
 ---
 
 ## Part 7: Teacher/Professor Tips for IIT Gandhinagar
 
 *   **Mention "PEFT/LoRA":** If they ask about scaling, say: *"For larger models like Llama-3, I would use LoRA (Low-Rank Adaptation) to only train 1% of the weights, which is much faster."*
+*   **Mention "Gemma Chat Templates":** Point out that Gemma uses specific control tokens like `<start_of_turn>user` and `<start_of_turn>model`. This is a "modern LLM" characteristic that wasn't present in older GPT models.
 *   **Mention "Vector Databases":** Say: *"In this demo, I use a simple NumPy array for research clarity. In production, I would use ChromaDB or FAISS to handle millions of documents."*
 *   **Mention "System Prompts":** Point out how you used role-play in Activity 3: *"You are a factual assistant for India's Economic Survey."* This is called **"Persona Grounding."**
 

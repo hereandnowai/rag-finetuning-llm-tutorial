@@ -41,9 +41,9 @@ By the end, learners will be able to:
 
 ### Activity 2 (60 mins): Fine-Tuned LLM (No RAG)
 - File: `activity2_finetune_no_rag.py`
-- Goal: Train a small local model (`distilgpt2`) on generated QA pairs.
+- Goal: Train a small local model (`google/gemma-3-270m`) on generated QA pairs.
 - Run:
-  - `python activity2_finetune_no_rag.py --epochs 3`
+  - `export KMP_DUPLICATE_LIB_OK=TRUE && python activity2_finetune_no_rag.py --epochs 3`
 - Sample query:
   - `python activity2_finetune_no_rag.py --ask "What is one key factual statement from Economic Survey chunk 2?"`
 
