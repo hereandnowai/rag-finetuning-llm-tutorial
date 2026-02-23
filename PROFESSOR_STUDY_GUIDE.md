@@ -1,6 +1,6 @@
 # Comprehensive Professor's Study Guide: RAG vs. Fine-Tuning
 
-This guide is designed for your faculty interview at IIT Gandhinagar. It covers conceptual, technical, and implementation-specific details based on the scripts in this project.
+This guide is designed for anyone who is going to be inteviewed on RAG and Fine-tuning. It covers conceptual, technical, and implementation-specific details based on the scripts in this project.
 
 ---
 
